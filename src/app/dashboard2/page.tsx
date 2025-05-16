@@ -26,62 +26,7 @@ import Link from "next/link";
 import { calculateAnalysisData } from "../spcUtils";
 import { AnalysisData } from "@/types";
 import { ShiftData, MaterialData, OperationData, GuageData } from "@/types/spc";
-
-// Data interfaces
-interface ProcessMetrics {
-  xBar: number;
-  stdDevOverall: number;
-  stdDevWithin: number;
-  movingRange: number;
-  cp: number;
-  cpkUpper: number;
-  cpkLower: number;
-  cpk: number;
-  pp: number;
-  ppu: number;
-  ppl: number;
-  ppk: number;
-  lsl: number;
-  usl: number;
-}
-
-interface ChartLimits {
-  xBarUcl: number;
-  xBarLcl: number;
-  xBarMean: number;
-  rangeUcl: number;
-  rangeLcl: number;
-  rangeMean: number;
-}
-
-interface ControlChartData {
-  xBarData: Array<{x: number; y: number}>;
-  rangeData: Array<{x: number; y: number}>;
-  limits: ChartLimits;
-}
-
-interface DistributionData {
-  data: Array<{x: number; y: number}>;
-  stats: {
-    mean: number;
-    stdDev: number;
-    target: number;
-  };
-  numberOfBins: number;
-}
-
-interface SSAnalysis {
-  processShift: string;
-  processSpread: string;
-  specialCause: string;
-}
-
-interface ProcessInterpretation {
-  shortTermCapability: string;
-  shortTermCentered: string;
-  longTermPerformance: string;
-  longTermCentered: string;
-}
+import { Metrics } from "@/types";
 
 // Add this adapter function before the SPCAnalysisPage component:
 function adaptAnalysisData(data: ReturnType<typeof calculateAnalysisData>): AnalysisData {
@@ -386,7 +331,7 @@ export default function SPCAnalysisPage() {
     </div>
   );
 
-  const renderMetricCard = (metrics: ProcessMetrics) => (
+  const renderMetricCard = (metrics: Metrics) => (
     <motion.div {...fadeIn}>
       <Card className="mt-4">
         <CardHeader className="pb-2">
@@ -422,7 +367,7 @@ export default function SPCAnalysisPage() {
     </motion.div>
   );
 
-  const renderControlCharts = (chartData: ControlChartData) => (
+  const renderControlCharts = (chartData: AnalysisData['controlCharts']) => (
     <motion.div {...fadeIn}>
       <Card className="mt-4">
         <CardHeader className="pb-2">
@@ -482,7 +427,7 @@ export default function SPCAnalysisPage() {
 
   const renderHistogram = ({ data, stats, lsl, usl }: {
     data: Array<{x: number; y: number}>;
-    stats: {mean: number; stdDev: number; target: number};
+    stats: {mean: number; target: number};
     lsl: number;
     usl: number;
   }) => (
@@ -769,7 +714,10 @@ export default function SPCAnalysisPage() {
             {renderControlCharts(analysisData.controlCharts)}
             {renderHistogram({
               data: analysisData.distribution.data,
-              stats: analysisData.distribution.stats,
+              stats: {
+                mean: analysisData.distribution.stats.mean,
+                target: analysisData.distribution.stats.target
+              },
               lsl: analysisData.metrics.lsl,
               usl: analysisData.metrics.usl,
             })}
