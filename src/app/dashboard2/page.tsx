@@ -23,15 +23,9 @@ import {
   ReferenceLine, ResponsiveContainer, BarChart, Bar
 } from "recharts";
 import Link from "next/link";
-import { calculateAnalysisData } from "@/app/spcUtils";
-import {
-  AnalysisData,
-  ShiftData,
-  MaterialData,
-  OperationData,
-  GuageData,
-  InspectionData
-} from "@/types/spc";
+import { calculateAnalysisData } from "../spcUtils";
+import { AnalysisData as SPCAnalysisData } from "@/types/spc";
+import { AnalysisData, InspectionData } from "@/types";
 
 // Data interfaces
 interface ProcessMetrics {
@@ -87,6 +81,34 @@ interface ProcessInterpretation {
   shortTermCentered: string;
   longTermPerformance: string;
   longTermCentered: string;
+}
+
+// Add this adapter function before the SPCAnalysisPage component:
+function adaptAnalysisData(data: ReturnType<typeof calculateAnalysisData>): AnalysisData {
+  // Convert from spcUtils AnalysisData to the expected AnalysisData type
+  return {
+    metrics: {
+      xBar: data.metrics.xBar,
+      stdDevOverall: data.metrics.stdDevOverall,
+      stdDevWithin: data.metrics.stdDevWithin,
+      movingRange: data.metrics.avgRange,
+      cp: data.metrics.cp,
+      cpkUpper: data.metrics.cpu,
+      cpkLower: data.metrics.cpl,
+      cpk: data.metrics.cpk,
+      pp: data.metrics.pp,
+      ppu: data.metrics.ppu,
+      ppl: data.metrics.ppl,
+      ppk: data.metrics.ppk,
+      lsl: data.metrics.lsl,
+      usl: data.metrics.usl,
+      target: data.metrics.target
+    },
+    controlCharts: data.controlCharts,
+    distribution: data.distribution,
+    ssAnalysis: data.ssAnalysis,
+    processInterpretation: data.processInterpretation
+  };
 }
 
 export default function SPCAnalysisPage() {
@@ -245,7 +267,7 @@ export default function SPCAnalysisPage() {
 
       // Use the SPC calculation utilities
       const analysis = calculateAnalysisData(filteredData);
-      setAnalysisData(analysis);
+      setAnalysisData(adaptAnalysisData(analysis));
     } catch (error) {
       console.error("Error analyzing data:", error);
       setError(error instanceof Error ? error.message : "Failed to analyze data");
