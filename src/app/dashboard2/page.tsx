@@ -24,8 +24,8 @@ import {
 } from "recharts";
 import Link from "next/link";
 import { calculateAnalysisData } from "../spcUtils";
-import { AnalysisData as SPCAnalysisData } from "@/types/spc";
-import { AnalysisData, InspectionData } from "@/types";
+import { AnalysisData } from "@/types";
+import { ShiftData, MaterialData, OperationData, GuageData } from "@/types/spc";
 
 // Data interfaces
 interface ProcessMetrics {
@@ -91,10 +91,10 @@ function adaptAnalysisData(data: ReturnType<typeof calculateAnalysisData>): Anal
       xBar: data.metrics.xBar,
       stdDevOverall: data.metrics.stdDevOverall,
       stdDevWithin: data.metrics.stdDevWithin,
-      movingRange: data.metrics.avgRange,
+      avgRange: data.metrics.avgRange,
       cp: data.metrics.cp,
-      cpkUpper: data.metrics.cpu,
-      cpkLower: data.metrics.cpl,
+      cpu: data.metrics.cpu,
+      cpl: data.metrics.cpl,
       cpk: data.metrics.cpk,
       pp: data.metrics.pp,
       ppu: data.metrics.ppu,
@@ -104,10 +104,45 @@ function adaptAnalysisData(data: ReturnType<typeof calculateAnalysisData>): Anal
       usl: data.metrics.usl,
       target: data.metrics.target
     },
-    controlCharts: data.controlCharts,
-    distribution: data.distribution,
-    ssAnalysis: data.ssAnalysis,
-    processInterpretation: data.processInterpretation
+    controlCharts: {
+      xBarData: data.controlCharts.xBarData,
+      rangeData: data.controlCharts.rangeData,
+      limits: {
+        xBarUcl: data.controlCharts.limits.xBarUcl,
+        xBarMean: data.controlCharts.limits.xBarMean,
+        xBarLcl: data.controlCharts.limits.xBarLcl,
+        Agostinho: data.controlCharts.limits.Agostinho || 0,
+        rangeUcl: data.controlCharts.limits.rangeUcl,
+        rangeMean: data.controlCharts.limits.rangeMean,
+        rangeLcl: data.controlCharts.limits.rangeLcl
+      }
+    },
+    distribution: {
+      data: data.distribution.data,
+      stats: {
+        min: data.distribution.data.length > 0 ? Math.min(...data.distribution.data.map(point => point.x)) : 0,
+        max: data.distribution.data.length > 0 ? Math.max(...data.distribution.data.map(point => point.x)) : 0,
+        mean: data.distribution.stats.mean,
+        target: data.distribution.stats.target,
+        binEdges: []
+      }
+    },
+    ssAnalysis: {
+      processShift: data.ssAnalysis.processShift,
+      processSpread: data.ssAnalysis.processSpread,
+      specialCausePresent: data.ssAnalysis.specialCausePresent || "No",
+      pointsOutsideLimits: data.ssAnalysis.pointsOutsideLimits || "None",
+      rangePointsOutsideLimits: data.ssAnalysis.rangePointsOutsideLimits || "None",
+      eightConsecutivePoints: data.ssAnalysis.eightConsecutivePoints || "No",
+      sixConsecutiveTrend: data.ssAnalysis.sixConsecutiveTrend || "No"
+    },
+    processInterpretation: {
+      decisionRemark: data.processInterpretation.decisionRemark || "Process Analysis",
+      processPotential: data.processInterpretation.processPotential || "",
+      processPerformance: data.processInterpretation.processPerformance || "",
+      processStability: data.processInterpretation.processStability || "",
+      processShift: data.processInterpretation.processShift || ""
+    }
   };
 }
 
